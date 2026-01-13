@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { User } from "../types";
 
 declare global {
@@ -32,7 +32,7 @@ const ALLOWED_DOMAINS = ["funiber.org", "uneatlantico.es"];
 const DEFAULT_CLIENT_ID =
   "519816706964-en25d9nk3vfarphvmduf96eupmpp4hfv.apps.googleusercontent.com";
 
-export function Login({ onLogin }: LoginProps) {
+export const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [error, setError] = useState<string | null>(null);
   const [clientId, setClientId] = useState<string>(DEFAULT_CLIENT_ID);
   const [showClientIdInput, setShowClientIdInput] = useState(false);
@@ -41,8 +41,8 @@ export function Login({ onLogin }: LoginProps) {
     const cleanId = clientId.trim();
     if (!cleanId) return;
 
-    const initialize = () => {
-      if (window.google?.accounts?.id) {
+    const initializeGoogleAuth = () => {
+      if (window.google && window.google.accounts) {
         try {
           window.google.accounts.id.initialize({
             client_id: cleanId,
@@ -63,14 +63,14 @@ export function Login({ onLogin }: LoginProps) {
           }
         } catch (e) {
           console.error("Google Auth Initialization Error:", e);
-          setError("Error inicializando Google Auth.");
+          setError("Error inicializando Google Auth. Verifica la consola.");
         }
       }
     };
 
     const interval = setInterval(() => {
-      if (window.google?.accounts?.id) {
-        initialize();
+      if (window.google && window.google.accounts) {
+        initializeGoogleAuth();
         clearInterval(interval);
       }
     }, 300);
@@ -80,24 +80,26 @@ export function Login({ onLogin }: LoginProps) {
 
   const handleCredentialResponse = (response: any) => {
     const payload = parseJwt(response.credential);
-    if (!payload) {
+
+    if (payload) {
+      const email = payload.email;
+      const isAllowed =
+        email.endsWith("@funiber.org") || email.endsWith("@uneatlantico.es");
+
+      if (isAllowed) {
+        onLogin({
+          name: payload.name,
+          email: payload.email,
+          picture: payload.picture,
+        });
+      } else {
+        setError(
+          `El dominio ${email.split("@")[1]} no está autorizado. Solo @funiber.org y @uneatlantico.es`
+        );
+      }
+    } else {
       setError("Error procesando las credenciales de Google.");
-      return;
     }
-    const email: string = payload.email;
-    const domain = email.split("@")[1];
-    const isAllowed = ALLOWED_DOMAINS.some((d) => email.endsWith(`@${d}`));
-
-    if (!isAllowed) {
-      setError(`El dominio ${domain} no está autorizado.`);
-      return;
-    }
-
-    onLogin({
-      name: payload.name,
-      email: payload.email,
-      picture: payload.picture,
-    });
   };
 
   return (
@@ -105,7 +107,17 @@ export function Login({ onLogin }: LoginProps) {
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full border border-slate-200 text-center">
         <div className="flex justify-center mb-6">
           <div className="bg-sky-600 p-4 rounded-2xl shadow-lg">
-            <span className="text-white text-xl font-bold">AI</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="w-10 h-10 text-white"
+            >
+              <path d="M3 21V8l9-5 9 5v13" />
+              <path d="M9 21v-6h6v6" />
+            </svg>
           </div>
         </div>
 
@@ -117,8 +129,19 @@ export function Login({ onLogin }: LoginProps) {
         </p>
 
         {error && (
-          <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-6 border border-red-100 text-left">
-            {error}
+          <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-6 border border-red-100 flex items-center gap-2 text-left">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="w-4 h-4 flex-shrink-0 mt-0.5"
+            >
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+            <span>{error}</span>
           </div>
         )}
 
@@ -127,18 +150,20 @@ export function Login({ onLogin }: LoginProps) {
         </div>
 
         {showClientIdInput ? (
-          <div className="mt-4 pt-4 border-t border-slate-100 text-left">
-            <label className="text-xs text-slate-400">
-              Configuración Manual (Client ID)
-            </label>
-            <div className="mt-2">
-              <input
-                type="text"
-                placeholder="Ingresa Google Client ID"
-                value={clientId}
-                onChange={(e) => setClientId(e.target.value)}
-                className="w-full text-xs border border-slate-300 rounded p-2 focus:ring-2 focus:ring-sky-500 outline-none"
-              />
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <div className="text-left">
+              <label className="text-xs text-slate-400">
+                Configuración Manual (Client ID)
+              </label>
+              <div className="mt-2">
+                <input
+                  type="text"
+                  placeholder="Ingresa Google Client ID"
+                  value={clientId}
+                  onChange={(e) => setClientId(e.target.value)}
+                  className="w-full text-xs border border-slate-300 rounded p-2 focus:ring-2 focus:ring-sky-500 outline-none"
+                />
+              </div>
             </div>
           </div>
         ) : (
@@ -153,16 +178,15 @@ export function Login({ onLogin }: LoginProps) {
         )}
 
         <div className="mt-8 text-xs text-slate-400 flex flex-col gap-1">
-          <span>Dominios autorizados:</span>
+          <span>Solo dominios autorizados:</span>
           <div className="flex gap-2 justify-center font-mono">
-            {ALLOWED_DOMAINS.map((d) => (
-              <span key={d} className="bg-slate-100 px-2 py-1 rounded">
-                @{d}
-              </span>
-            ))}
+            <span className="bg-slate-100 px-2 py-1 rounded">@funiber.org</span>
+            <span className="bg-slate-100 px-2 py-1 rounded">
+              @uneatlantico.es
+            </span>
           </div>
         </div>
       </div>
     </div>
   );
-}
+};
