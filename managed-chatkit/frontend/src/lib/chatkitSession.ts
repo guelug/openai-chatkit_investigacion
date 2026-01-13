@@ -1,12 +1,16 @@
 const readEnvString = (value: unknown): string | undefined =>
   typeof value === "string" && value.trim() ? value.trim() : undefined;
 
+const env = (import.meta as ImportMeta & { env?: Record<string, string> }).env;
+
 export const workflowId = (() => {
-  const id = readEnvString(import.meta.env.VITE_CHATKIT_WORKFLOW_ID);
-  if (!id || id.startsWith("wf_replace")) {
-    throw new Error("Set VITE_CHATKIT_WORKFLOW_ID in your .env file.");
+  const fallbackWorkflowId =
+    "wf_696633c3eb508190b76d628393caed260d34f6b352dec799";
+  const id = readEnvString(env?.VITE_CHATKIT_WORKFLOW_ID);
+  if (id && !id.startsWith("wf_replace")) {
+    return id;
   }
-  return id;
+  return fallbackWorkflowId;
 })();
 
 export function createClientSecretFetcher(

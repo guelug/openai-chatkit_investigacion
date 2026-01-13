@@ -1,11 +1,65 @@
+import { useMemo, useState } from "react";
 import { ChatKitPanel } from "./components/ChatKitPanel";
+import { N8NAgentPanel } from "./components/N8NAgentPanel";
+import { agents, type AgentId } from "./lib/agents";
 
 export default function App() {
+  const [selectedAgent, setSelectedAgent] = useState<AgentId>("chatgpt");
+
+  const AgentComponent = useMemo(() => {
+    if (selectedAgent === "custom") return <N8NAgentPanel />;
+    return <ChatKitPanel />;
+  }, [selectedAgent]);
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-end bg-slate-100 dark:bg-slate-950">
-      <div className="mx-auto w-full max-w-5xl">
-        <ChatKitPanel />
-      </div>
-    </main>
+    <div className="flex min-h-screen bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+      <aside className="w-64 border-r border-slate-200 bg-white/80 backdrop-blur-md p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
+        <div className="mb-6">
+          <h1 className="text-xl font-bold tracking-tight">Agentes</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Selecciona el origen de la conversación.
+          </p>
+        </div>
+        <div className="space-y-2">
+          {agents.map((agent) => (
+            <button
+              key={agent.id}
+              onClick={() => setSelectedAgent(agent.id)}
+              className={`w-full rounded-xl border px-3 py-3 text-left transition-all ${
+                selectedAgent === agent.id
+                  ? "border-sky-300 bg-sky-50 text-sky-700 shadow-sm dark:border-sky-700/60 dark:bg-sky-900/30"
+                  : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-slate-700 dark:hover:bg-slate-800/70"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-lg">{agent.icon}</span>
+                <div>
+                  <p className="text-sm font-semibold">{agent.name}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {agent.description}
+                  </p>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </aside>
+
+      <main className="flex-1">
+        <div className="mx-auto flex h-screen max-w-6xl flex-col px-4 py-6">
+          <header className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
+            <div>
+              <p className="text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                Conversación
+              </p>
+              <h2 className="text-lg font-semibold">
+                {agents.find((a) => a.id === selectedAgent)?.name}
+              </h2>
+            </div>
+          </header>
+          <div className="flex-1">{AgentComponent}</div>
+        </div>
+      </main>
+    </div>
   );
 }
