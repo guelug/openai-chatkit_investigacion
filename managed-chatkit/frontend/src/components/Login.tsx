@@ -30,7 +30,7 @@ const parseJwt = (token: string) => {
 
 const ALLOWED_DOMAINS = ["funiber.org", "uneatlantico.es"];
 const DEFAULT_CLIENT_ID =
-  "519816706964-en25d9nk3vfarphvmduf96eupmpp4hfv.apps.googleusercontent.com";
+  "519816706964-anh0ri4i0f5hod28i244knlfeab8konn.apps.googleusercontent.com";
 
 export const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [error, setError] = useState<string | null>(null);
