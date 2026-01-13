@@ -64,7 +64,7 @@ export function N8NAgentPanel() {
   }, []);
 
   return (
-    <div className="h-full w-full rounded-2xl bg-white shadow-sm transition-colors dark:bg-slate-900">
+    <div className="h-full w-full bg-white">
       <div ref={containerRef} className="h-full w-full" />
     </div>
   );

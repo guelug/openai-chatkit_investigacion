@@ -10,6 +10,7 @@ const USER_STORAGE_KEY = "chat_investigacion_user";
 export default function App() {
   const [selectedAgent, setSelectedAgent] = useState<AgentId>("chatgpt");
   const [user, setUser] = useState<User | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     try {
@@ -42,77 +43,99 @@ export default function App() {
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-      <aside className="w-64 border-r border-slate-200 bg-white/80 backdrop-blur-md p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
-        <div className="mb-6">
-          <h1 className="text-xl font-bold tracking-tight">Agentes</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Selecciona el origen de la conversación.
-          </p>
+    <div className="flex h-screen bg-white">
+      {/* Sidebar */}
+      <aside
+        className={`${sidebarOpen ? "w-64" : "w-0"
+          } transition-all duration-300 overflow-hidden bg-gray-50 border-r border-gray-200 flex flex-col`}
+      >
+        <div className="p-3 border-b border-gray-200">
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Nueva conversación
+          </button>
         </div>
-        <div className="space-y-2">
+
+        <div className="flex-1 overflow-y-auto p-2">
+          <p className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Agentes
+          </p>
           {agents.map((agent) => (
             <button
               key={agent.id}
               onClick={() => setSelectedAgent(agent.id)}
-              className={`w-full rounded-xl border px-3 py-3 text-left transition-all ${
-                selectedAgent === agent.id
-                  ? "border-sky-300 bg-sky-50 text-sky-700 shadow-sm dark:border-sky-700/60 dark:bg-sky-900/30"
-                  : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-slate-700 dark:hover:bg-slate-800/70"
-              }`}
+              className={`w-full text-left px-3 py-2 rounded-lg mb-1 transition ${selectedAgent === agent.id
+                  ? "bg-gray-200 text-gray-900"
+                  : "text-gray-700 hover:bg-gray-100"
+                }`}
             >
-              <div className="flex items-center gap-3">
-                <span className="text-lg">{agent.icon}</span>
-                <div>
-                  <p className="text-sm font-semibold">{agent.name}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {agent.description}
-                  </p>
-                </div>
+              <div className="flex items-center gap-2">
+                <span className="text-base">{agent.icon}</span>
+                <span className="text-sm font-medium truncate">{agent.name}</span>
               </div>
             </button>
           ))}
         </div>
+
+        <div className="p-3 border-t border-gray-200">
+          <div className="flex items-center gap-3 px-2 py-2">
+            {user.picture ? (
+              <img
+                src={user.picture}
+                alt={user.name}
+                className="h-8 w-8 rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-white text-sm font-semibold">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
+              title="Cerrar sesión"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
+          </div>
+        </div>
       </aside>
 
-      <main className="flex-1">
-        <div className="mx-auto flex h-screen max-w-6xl flex-col px-4 py-6">
-          <header className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-800">
-            <div>
-              <p className="text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                Conversación
-              </p>
-              <h2 className="text-lg font-semibold">
-                {agents.find((a) => a.id === selectedAgent)?.name}
-              </h2>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <p className="text-sm font-semibold">{user.name}</p>
-                <p className="text-xs text-slate-500">{user.email}</p>
-              </div>
-              {user.picture ? (
-                <img
-                  src={user.picture}
-                  alt={user.name}
-                  className="h-10 w-10 rounded-full border border-slate-200 object-cover"
-                />
-              ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-600 text-white font-semibold">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-              )}
-              <button
-                onClick={handleLogout}
-                className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800"
-              >
-                Cerrar sesión
-              </button>
-            </div>
-          </header>
-          <div className="flex-1">{AgentComponent}</div>
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col min-w-0">
+        {/* Top bar */}
+        <header className="h-12 flex items-center px-4 border-b border-gray-200 bg-white">
+          {!sidebarOpen && (
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 mr-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          )}
+          <h1 className="text-base font-semibold text-gray-800">
+            {agents.find((a) => a.id === selectedAgent)?.name}
+          </h1>
+        </header>
+
+        {/* Chat area */}
+        <div className="flex-1 overflow-hidden">
+          {AgentComponent}
         </div>
       </main>
     </div>
   );
 }
+

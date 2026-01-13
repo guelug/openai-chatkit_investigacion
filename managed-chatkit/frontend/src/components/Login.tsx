@@ -102,20 +102,19 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full border border-slate-200 text-center">
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
+      <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center">
         <div className="flex justify-center mb-6">
-          <div className="bg-sky-600 p-4 rounded-2xl shadow-lg">
+          <div className="bg-emerald-600 p-4 rounded-full">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
-              className="w-10 h-10 text-white"
+              className="w-8 h-8 text-white"
             >
-              <path d="M3 21V8l9-5 9 5v13" />
-              <path d="M9 21v-6h6v6" />
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
           </div>
         </div>
