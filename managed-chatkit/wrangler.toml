@@ -1,8 +1,7 @@
 name = "chatinvestigacion"
 compatibility_date = "2026-01-13"
 
-[assets]
-directory = "./frontend/dist"
+pages_build_output_dir = "./frontend/dist"
 
 [observability]
 enabled = true
