@@ -34,8 +34,7 @@ const DEFAULT_CLIENT_ID =
 
 export const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [error, setError] = useState<string | null>(null);
-  const [clientId, setClientId] = useState<string>(DEFAULT_CLIENT_ID);
-  const [showClientIdInput, setShowClientIdInput] = useState(false);
+  const clientId = DEFAULT_CLIENT_ID;
 
   useEffect(() => {
     const cleanId = clientId.trim();
@@ -147,44 +146,6 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
         <div className="flex justify-center mb-6 min-h-[44px]">
           <div id="googleButtonDiv"></div>
-        </div>
-
-        {showClientIdInput ? (
-          <div className="mt-4 pt-4 border-t border-slate-100">
-            <div className="text-left">
-              <label className="text-xs text-slate-400">
-                Configuración Manual (Client ID)
-              </label>
-              <div className="mt-2">
-                <input
-                  type="text"
-                  placeholder="Ingresa Google Client ID"
-                  value={clientId}
-                  onChange={(e) => setClientId(e.target.value)}
-                  className="w-full text-xs border border-slate-300 rounded p-2 focus:ring-2 focus:ring-sky-500 outline-none"
-                />
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="mt-4">
-            <button
-              onClick={() => setShowClientIdInput(true)}
-              className="text-[10px] text-slate-400 hover:text-sky-600 underline"
-            >
-              ¿Problemas? Configurar Client ID
-            </button>
-          </div>
-        )}
-
-        <div className="mt-8 text-xs text-slate-400 flex flex-col gap-1">
-          <span>Solo dominios autorizados:</span>
-          <div className="flex gap-2 justify-center font-mono">
-            <span className="bg-slate-100 px-2 py-1 rounded">@funiber.org</span>
-            <span className="bg-slate-100 px-2 py-1 rounded">
-              @uneatlantico.es
-            </span>
-          </div>
         </div>
       </div>
     </div>
