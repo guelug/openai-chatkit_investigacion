@@ -1,15 +1,45 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChatKitPanel } from "./components/ChatKitPanel";
+import { Login } from "./components/Login";
 import { N8NAgentPanel } from "./components/N8NAgentPanel";
 import { agents, type AgentId } from "./lib/agents";
+import { type User } from "./types";
+
+const USER_STORAGE_KEY = "chat_investigacion_user";
 
 export default function App() {
   const [selectedAgent, setSelectedAgent] = useState<AgentId>("chatgpt");
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(USER_STORAGE_KEY);
+      if (stored) {
+        setUser(JSON.parse(stored));
+      }
+    } catch {
+      localStorage.removeItem(USER_STORAGE_KEY);
+    }
+  }, []);
+
+  const handleLogin = (newUser: User) => {
+    setUser(newUser);
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem(USER_STORAGE_KEY);
+  };
 
   const AgentComponent = useMemo(() => {
     if (selectedAgent === "custom") return <N8NAgentPanel />;
     return <ChatKitPanel />;
   }, [selectedAgent]);
+
+  if (!user) {
+    return <Login onLogin={handleLogin} />;
+  }
 
   return (
     <div className="flex min-h-screen bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
@@ -55,6 +85,29 @@ export default function App() {
               <h2 className="text-lg font-semibold">
                 {agents.find((a) => a.id === selectedAgent)?.name}
               </h2>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <p className="text-sm font-semibold">{user.name}</p>
+                <p className="text-xs text-slate-500">{user.email}</p>
+              </div>
+              {user.picture ? (
+                <img
+                  src={user.picture}
+                  alt={user.name}
+                  className="h-10 w-10 rounded-full border border-slate-200 object-cover"
+                />
+              ) : (
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-600 text-white font-semibold">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <button
+                onClick={handleLogout}
+                className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800"
+              >
+                Cerrar sesión
+              </button>
             </div>
           </header>
           <div className="flex-1">{AgentComponent}</div>
