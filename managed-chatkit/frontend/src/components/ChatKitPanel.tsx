@@ -2,10 +2,14 @@ import { useMemo } from "react";
 import { ChatKit, useChatKit } from "@openai/chatkit-react";
 import { createClientSecretFetcher, workflowId } from "../lib/chatkitSession";
 
-export function ChatKitPanel() {
+interface ChatKitPanelProps {
+  apiKey?: string;
+}
+
+export function ChatKitPanel({ apiKey }: ChatKitPanelProps) {
   const getClientSecret = useMemo(
-    () => createClientSecretFetcher(workflowId),
-    []
+    () => createClientSecretFetcher(workflowId, "/api/create-session", apiKey),
+    [apiKey]
   );
 
   const chatkit = useChatKit({

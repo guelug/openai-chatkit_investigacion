@@ -25,9 +25,10 @@ export default {
 };
 
 async function handleCreateSession(request, env) {
-    const apiKey = env.OPENAI_API_KEY;
+    // Check header first, then env variable
+    const apiKey = request.headers.get("X-API-Key") || env.OPENAI_API_KEY;
     if (!apiKey) {
-        return jsonResponse({ error: "Missing OPENAI_API_KEY" }, 500);
+        return jsonResponse({ error: "API Key no configurada. Haz clic en el icono de llave para añadirla." }, 401);
     }
 
     let body = {};

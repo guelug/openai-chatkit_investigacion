@@ -6,17 +6,25 @@ import { agents, type AgentId } from "./lib/agents";
 import { type User } from "./types";
 
 const USER_STORAGE_KEY = "chat_investigacion_user";
+const API_KEY_STORAGE_KEY = "chat_investigacion_api_key";
 
 export default function App() {
   const [selectedAgent, setSelectedAgent] = useState<AgentId>("chatgpt");
   const [user, setUser] = useState<User | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [apiKey, setApiKey] = useState<string>("");
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [tempApiKey, setTempApiKey] = useState("");
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem(USER_STORAGE_KEY);
       if (stored) {
         setUser(JSON.parse(stored));
+      }
+      const storedKey = localStorage.getItem(API_KEY_STORAGE_KEY);
+      if (storedKey) {
+        setApiKey(storedKey);
       }
     } catch {
       localStorage.removeItem(USER_STORAGE_KEY);
@@ -33,10 +41,21 @@ export default function App() {
     localStorage.removeItem(USER_STORAGE_KEY);
   };
 
+  const handleSaveApiKey = () => {
+    setApiKey(tempApiKey);
+    localStorage.setItem(API_KEY_STORAGE_KEY, tempApiKey);
+    setShowApiKeyModal(false);
+  };
+
+  const openApiKeyModal = () => {
+    setTempApiKey(apiKey);
+    setShowApiKeyModal(true);
+  };
+
   const AgentComponent = useMemo(() => {
     if (selectedAgent === "custom") return <N8NAgentPanel />;
-    return <ChatKitPanel />;
-  }, [selectedAgent]);
+    return <ChatKitPanel apiKey={apiKey} />;
+  }, [selectedAgent, apiKey]);
 
   if (!user) {
     return <Login onLogin={handleLogin} />;
@@ -44,6 +63,46 @@ export default function App() {
 
   return (
     <div className="flex h-screen bg-white">
+      {/* API Key Modal */}
+      {showApiKeyModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4 shadow-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-emerald-100 rounded-lg">
+                <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+              </div>
+              <h2 className="text-lg font-semibold text-gray-900">API Key de OpenAI</h2>
+            </div>
+            <p className="text-sm text-gray-500 mb-4">
+              Ingresa tu API Key de OpenAI para usar el agente ChatGPT. Se guardará en tu navegador.
+            </p>
+            <input
+              type="password"
+              value={tempApiKey}
+              onChange={(e) => setTempApiKey(e.target.value)}
+              placeholder="sk-..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none mb-4"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowApiKeyModal(false)}
+                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveApiKey}
+                className="flex-1 px-4 py-2 text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition"
+              >
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Sidebar */}
       <aside
         className={`${sidebarOpen ? "w-64" : "w-0"
@@ -70,8 +129,8 @@ export default function App() {
               key={agent.id}
               onClick={() => setSelectedAgent(agent.id)}
               className={`w-full text-left px-3 py-2 rounded-lg mb-1 transition ${selectedAgent === agent.id
-                  ? "bg-gray-200 text-gray-900"
-                  : "text-gray-700 hover:bg-gray-100"
+                ? "bg-gray-200 text-gray-900"
+                : "text-gray-700 hover:bg-gray-100"
                 }`}
             >
               <div className="flex items-center gap-2">
@@ -114,20 +173,36 @@ export default function App() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="h-12 flex items-center px-4 border-b border-gray-200 bg-white">
-          {!sidebarOpen && (
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="p-2 mr-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-          )}
-          <h1 className="text-base font-semibold text-gray-800">
-            {agents.find((a) => a.id === selectedAgent)?.name}
-          </h1>
+        <header className="h-12 flex items-center justify-between px-4 border-b border-gray-200 bg-white">
+          <div className="flex items-center">
+            {!sidebarOpen && (
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="p-2 mr-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            )}
+            <h1 className="text-base font-semibold text-gray-800">
+              {agents.find((a) => a.id === selectedAgent)?.name}
+            </h1>
+          </div>
+
+          {/* API Key button */}
+          <button
+            onClick={openApiKeyModal}
+            className={`p-2 rounded-lg transition ${apiKey
+                ? "text-emerald-600 hover:bg-emerald-50"
+                : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+              }`}
+            title={apiKey ? "API Key configurada" : "Configurar API Key"}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+            </svg>
+          </button>
         </header>
 
         {/* Chat area */}
@@ -138,4 +213,3 @@ export default function App() {
     </div>
   );
 }
-

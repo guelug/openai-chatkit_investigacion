@@ -15,14 +15,20 @@ export const workflowId = (() => {
 
 export function createClientSecretFetcher(
   workflow: string,
-  endpoint = "/api/create-session"
+  endpoint = "/api/create-session",
+  apiKey?: string
 ) {
   return async (currentSecret: string | null) => {
     if (currentSecret) return currentSecret;
 
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (apiKey) {
+      headers["X-API-Key"] = apiKey;
+    }
+
     const response = await fetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ workflow: { id: workflow } }),
     });
 
@@ -42,3 +48,4 @@ export function createClientSecretFetcher(
     return payload.client_secret;
   };
 }
+
