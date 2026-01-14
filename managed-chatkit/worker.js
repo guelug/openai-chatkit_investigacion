@@ -8,8 +8,13 @@ export default {
     async fetch(request, env) {
         const url = new URL(request.url);
 
-        // Handle API routes
-        if ((url.pathname === "/api/create-session" || url.pathname === "/api/chatkit/session") && request.method === "POST") {
+        // Debug route
+        if (url.pathname === "/api/test") {
+            return jsonResponse({ status: "Worker is active", url: url.pathname }, 200);
+        }
+
+        // Handle API routes - use looser matching to catch issues
+        if ((url.pathname.includes("/api/create-session") || url.pathname.includes("/api/chatkit/session")) && request.method === "POST") {
             console.log(`Handling session creation for: ${url.pathname}`);
             return handleCreateSession(request, env);
         }
