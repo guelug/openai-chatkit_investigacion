@@ -9,7 +9,7 @@ const USER_STORAGE_KEY = "chat_investigacion_user";
 const API_KEY_STORAGE_KEY = "chat_investigacion_api_key";
 
 export default function App() {
-  const [selectedAgent, setSelectedAgent] = useState<AgentId>("chatgpt");
+  const [selectedAgent, setSelectedAgent] = useState<AgentId>("chatgpt-basic");
   const [user, setUser] = useState<User | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [apiKey, setApiKey] = useState<string>("");
@@ -59,8 +59,14 @@ export default function App() {
 
   const AgentComponent = useMemo(() => {
     if (selectedAgent === "custom") return <N8NAgentPanel />;
-    return <ChatKitPanel apiKey={apiKey} />;
+
+    // Find the definition to get the workflowId
+    const definition = agents.find(a => a.id === selectedAgent);
+    if (!definition?.workflowId) return <div>Error: Workflow ID missing</div>;
+
+    return <ChatKitPanel apiKey={apiKey} workflowId={definition.workflowId} />;
   }, [selectedAgent, apiKey]);
+
 
   if (!user) {
     return <Login onLogin={handleLogin} />;

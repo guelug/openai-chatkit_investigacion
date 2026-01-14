@@ -4,12 +4,13 @@ import { createClientSecretFetcher, workflowId } from "../lib/chatkitSession";
 
 interface ChatKitPanelProps {
   apiKey?: string;
+  workflowId: string;
 }
 
-export function ChatKitPanel({ apiKey }: ChatKitPanelProps) {
+export function ChatKitPanel({ apiKey, workflowId }: ChatKitPanelProps) {
   const getClientSecret = useMemo(
-    () => createClientSecretFetcher(workflowId, "/api/create-session", apiKey),
-    [apiKey]
+    () => createClientSecretFetcher(workflowId, "/api/chatkit/session", apiKey),
+    [apiKey, workflowId]
   );
 
   const chatkit = useChatKit({

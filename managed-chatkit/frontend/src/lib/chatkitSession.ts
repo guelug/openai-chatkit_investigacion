@@ -19,7 +19,10 @@ export function createClientSecretFetcher(
   apiKey?: string
 ) {
   return async (currentSecret: string | null) => {
-    if (currentSecret) return currentSecret;
+    // If the SDK passes a secret, it means it's expired or invalid. 
+    // We must fetch a NEW one, not return the old one.
+    // if (currentSecret) return currentSecret; <--- REMOVED CAUSE OF INFINITE LOOP
+
 
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     if (apiKey) {
