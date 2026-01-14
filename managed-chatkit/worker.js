@@ -13,6 +13,18 @@ export default {
             return jsonResponse({ status: "Worker is active", url: url.pathname }, 200);
         }
 
+        // Handle CORS Preflight (OPTIONS)
+        if (request.method === "OPTIONS") {
+            return new Response(null, {
+                headers: {
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "POST, OPTIONS",
+                    "Access-Control-Allow-Headers": "Content-Type, X-API-Key",
+                    "Access-Control-Max-Age": "86400",
+                }
+            });
+        }
+
         // Handle API routes - use looser matching to catch issues
         if ((url.pathname.includes("/api/create-session") || url.pathname.includes("/api/chatkit/session")) && request.method === "POST") {
             console.log(`Handling session creation for: ${url.pathname}`);
