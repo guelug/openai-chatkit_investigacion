@@ -60,22 +60,44 @@ export function N8NAgentPanel() {
       chatInstanceRef.current = null;
     };
   }, []);
-
   const sendMessage = useCallback(async () => {
-    const trimmed = input.trim();
-    if (!trimmed || loading) return;
+    if ((!input.trim() && !selectedFile) || loading) return;
     setError(null);
     setLoading(true);
 
-    const userMsg: ChatMessage = { id: crypto.randomUUID(), role: "user", text: trimmed };
+    const userMsg: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: "user",
+      text: input.trim()
+    };
+
+    // Si hay archivo, lo añadimos al mensaje visualmente (opcional) o solo lo enviamos
+    if (selectedFile) {
+      userMsg.text += `\n[Archivo adjunto: ${selectedFile.name}]`;
+    }
+
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
+    const fileToSend = selectedFile;
+    setSelectedFile(null); // Clear after sending
 
     try {
+      // Estructura compatible con n8n (JSON con archivos en base64)
+      const payload = {
+        text: userMsg.text,
+        files: fileToSend ? [
+          {
+            name: fileToSend.name,
+            mimeType: fileToSend.type,
+            data: fileToSend.content.split(",")[1] || "" // Remove prefix data:image/png;base64,
+          }
+        ] : []
+      };
+
       const response = await fetch(N8N_WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: trimmed }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -111,8 +133,10 @@ export function N8NAgentPanel() {
       setError("No se pudo obtener respuesta del agente n8n.");
     } finally {
       setLoading(false);
+      // Reset file input
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
-  }, [input, loading]);
+  }, [input, loading, selectedFile]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "Enter" && !event.shiftKey) {
@@ -131,11 +155,10 @@ export function N8NAgentPanel() {
               className={`flex ${msg.role === "assistant" ? "justify-start" : "justify-end"}`}
             >
               <div
-                className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-sm ${
-                  msg.role === "assistant"
-                    ? "bg-white border border-slate-200 text-slate-900"
-                    : "bg-emerald-600 text-white"
-                }`}
+                className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-sm ${msg.role === "assistant"
+                  ? "bg-white border border-slate-200 text-slate-900"
+                  : "bg-emerald-600 text-white"
+                  }`}
               >
                 <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.text}</p>
               </div>
@@ -151,6 +174,20 @@ export function N8NAgentPanel() {
 
       <div className="border-t border-slate-200 bg-white">
         <div className="max-w-4xl mx-auto px-4 py-3">
+          {selectedFile && (
+            <div className="mb-2 flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+              </svg>
+              <span className="truncate max-w-xs">{selectedFile.name}</span>
+              <button
+                onClick={() => { setSelectedFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                className="ml-auto text-emerald-500 hover:text-emerald-800"
+              >
+                ✕
+              </button>
+            </div>
+          )}
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-2 shadow-sm">
             <textarea
               value={input}
@@ -160,21 +197,38 @@ export function N8NAgentPanel() {
               className="w-full resize-none bg-transparent outline-none text-sm text-slate-900 placeholder:text-slate-400"
               rows={3}
             />
-            <div className="mt-2 flex items-center justify-end gap-2">
-              <button
-                onClick={() => setMessages((prev) => prev.slice(0, 1))}
-                className="px-3 py-2 text-xs text-slate-500 hover:text-slate-700 transition"
-              >
-                Limpiar
-              </button>
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  onChange={handleFileSelect}
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2 text-slate-500 hover:bg-slate-200 rounded-lg transition"
+                  title="Adjuntar archivo"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setMessages((prev) => prev.slice(0, 1))}
+                  className="px-3 py-2 text-xs text-slate-500 hover:text-slate-700 transition"
+                >
+                  Limpiar
+                </button>
+              </div>
+
               <button
                 onClick={sendMessage}
-                disabled={loading || !input.trim()}
-                className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition ${
-                  loading || !input.trim()
-                    ? "bg-slate-200 text-slate-500 cursor-not-allowed"
-                    : "bg-emerald-600 text-white hover:bg-emerald-700"
-                }`}
+                disabled={(loading || (!input.trim() && !selectedFile))}
+                className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition ${(loading || (!input.trim() && !selectedFile))
+                  ? "bg-slate-200 text-slate-500 cursor-not-allowed"
+                  : "bg-emerald-600 text-white hover:bg-emerald-700"
+                  }`}
               >
                 {loading && (
                   <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -205,3 +259,4 @@ export function N8NAgentPanel() {
     </div>
   );
 }
+
