@@ -9,7 +9,8 @@ export default {
         const url = new URL(request.url);
 
         // Handle API routes
-        if (url.pathname === "/api/create-session" && request.method === "POST") {
+        if ((url.pathname === "/api/create-session" || url.pathname === "/api/chatkit/session") && request.method === "POST") {
+            console.log(`Handling session creation for: ${url.pathname}`);
             return handleCreateSession(request, env);
         }
 
