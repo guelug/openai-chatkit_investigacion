@@ -4,13 +4,24 @@ const SESSION_COOKIE_NAME = "chatkit_session_id";
 const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 const DEFAULT_WORKFLOW_ID = "wf_696633c3eb508190b76d628393caed260d34f6b352dec799";
 
+export async function onRequestOptions() {
+    return new Response(null, {
+        headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, X-API-Key",
+            "Access-Control-Max-Age": "86400",
+        },
+    });
+}
+
 export async function onRequestPost(context) {
     const { request, env } = context;
 
     // Check header first (from UI), then env variable (secrets)
     const apiKey = request.headers.get("X-API-Key") || env.OPENAI_API_KEY;
     if (!apiKey) {
-        return jsonResponse({ error: "API Key no configurada. Haz clic en el icono de llave para añadirla." }, 401);
+        return jsonResponse({ error: "API Key no configurada. Haz clic en el icono de llave 🔑 arriba para añadirla." }, 401);
     }
 
     let body = {};
@@ -49,13 +60,13 @@ export async function onRequestPost(context) {
         }
 
         if (!upstream.ok) {
-            const message = payload.error || "Failed to create session";
+            const message = payload.error?.message || payload.error || "Failed to create session";
             return jsonResponse({ error: message }, upstream.status, cookieValue);
         }
 
         if (!payload.client_secret) {
             return jsonResponse(
-                { error: "Missing client secret in response" },
+                { error: "Missing client secret in response from OpenAI" },
                 502,
                 cookieValue
             );
@@ -126,7 +137,7 @@ function jsonResponse(data, status, cookieValue = null) {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Headers": "Content-Type, X-API-Key",
     };
 
     if (cookieValue) {
