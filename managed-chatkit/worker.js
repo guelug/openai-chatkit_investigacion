@@ -19,7 +19,12 @@ export default {
         }
 
         // Fallback to static assets
-        return env.ASSETS.fetch(request);
+        // When using Workers with Assets, the assets are provided via env.ASSETS
+        if (env.ASSETS) {
+            return env.ASSETS.fetch(request);
+        }
+
+        return new Response("Not Found", { status: 404 });
     },
 };
 
