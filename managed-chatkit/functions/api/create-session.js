@@ -1,31 +1,13 @@
-// Cloudflare Worker for ChatKit Session API
+// Cloudflare Pages Function for ChatKit Session API
 const CHATKIT_API_BASE = "https://api.openai.com";
 const SESSION_COOKIE_NAME = "chatkit_session_id";
 const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 const DEFAULT_WORKFLOW_ID = "wf_696633c3eb508190b76d628393caed260d34f6b352dec799";
 
-export default {
-    async fetch(request, env, ctx) {
-        const url = new URL(request.url);
+export async function onRequestPost(context) {
+    const { request, env } = context;
 
-        // Handle API routes
-        if (url.pathname === "/api/create-session" && request.method === "POST") {
-            return handleCreateSession(request, env);
-        }
-
-        if (url.pathname === "/health") {
-            return new Response(JSON.stringify({ status: "ok" }), {
-                headers: { "Content-Type": "application/json" },
-            });
-        }
-
-        // For all other requests, return null to let assets handle it
-        return env.ASSETS.fetch(request);
-    },
-};
-
-async function handleCreateSession(request, env) {
-    // Check header first, then env variable
+    // Check header first (from UI), then env variable (secrets)
     const apiKey = request.headers.get("X-API-Key") || env.OPENAI_API_KEY;
     if (!apiKey) {
         return jsonResponse({ error: "API Key no configurada. Haz clic en el icono de llave para añadirla." }, 401);
