@@ -1,23 +1,29 @@
-// Cloudflare Pages Function for ChatKit Session API
+// Cloudflare Pages Advanced Worker for ChatKit Session API
 const CHATKIT_API_BASE = "https://api.openai.com";
 const SESSION_COOKIE_NAME = "chatkit_session_id";
 const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 const DEFAULT_WORKFLOW_ID = "wf_696633c3eb508190b76d628393caed260d34f6b352dec799";
 
-export async function onRequestOptions() {
-    return new Response(null, {
-        headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, X-API-Key",
-            "Access-Control-Max-Age": "86400",
-        },
-    });
-}
+export default {
+    async fetch(request, env) {
+        const url = new URL(request.url);
 
-export async function onRequestPost(context) {
-    const { request, env } = context;
+        // Handle API routes
+        if (url.pathname === "/api/create-session" && request.method === "POST") {
+            return handleCreateSession(request, env);
+        }
 
+        // Add health check
+        if (url.pathname === "/health") {
+            return jsonResponse({ status: "ok" }, 200);
+        }
+
+        // Fallback to static assets
+        return env.ASSETS.fetch(request);
+    },
+};
+
+async function handleCreateSession(request, env) {
     // Check header first (from UI), then env variable (secrets)
     const apiKey = request.headers.get("X-API-Key") || env.OPENAI_API_KEY;
     if (!apiKey) {
