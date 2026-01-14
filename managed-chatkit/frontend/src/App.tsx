@@ -42,8 +42,13 @@ export default function App() {
   };
 
   const handleSaveApiKey = () => {
-    setApiKey(tempApiKey);
-    localStorage.setItem(API_KEY_STORAGE_KEY, tempApiKey);
+    const trimmedKey = tempApiKey.trim();
+    if (trimmedKey && !trimmedKey.startsWith("sk-")) {
+      alert("La API Key debe comenzar con 'sk-'");
+      return;
+    }
+    setApiKey(trimmedKey);
+    localStorage.setItem(API_KEY_STORAGE_KEY, trimmedKey);
     setShowApiKeyModal(false);
   };
 
@@ -194,8 +199,8 @@ export default function App() {
           <button
             onClick={openApiKeyModal}
             className={`p-2 rounded-lg transition ${apiKey
-                ? "text-emerald-600 hover:bg-emerald-50"
-                : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+              ? "text-emerald-600 hover:bg-emerald-50"
+              : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
               }`}
             title={apiKey ? "API Key configurada" : "Configurar API Key"}
           >
