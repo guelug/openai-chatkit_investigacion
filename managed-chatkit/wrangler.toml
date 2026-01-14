@@ -1,6 +1,6 @@
 name = "chatinvestigacion"
 compatibility_date = "2026-01-13"
-main = "./_worker.js"
+main = "./worker.js"
 
 [assets]
 directory = "./frontend/dist"
