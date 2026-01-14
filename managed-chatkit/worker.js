@@ -61,13 +61,17 @@ async function handleCreateSession(request, env) {
     }
 
     const workflowId = resolveWorkflowId(body, env);
+    console.log(`Resolved Workflow ID: ${workflowId}`);
     if (!workflowId) {
+        console.error("Missing workflow ID");
         return jsonResponse({ error: "Missing workflow id" }, 400);
     }
 
     const { userId, cookieValue } = resolveUser(request);
+    console.log(`User ID: ${userId}`);
 
     try {
+        console.log("Sending request to OpenAI ChatKit API...");
         const upstream = await fetch(`${CHATKIT_API_BASE}/v1/chatkit/sessions`, {
             method: "POST",
             headers: {
@@ -81,15 +85,23 @@ async function handleCreateSession(request, env) {
             }),
         });
 
+        console.log(`OpenAI Response Status: ${upstream.status}`);
+
+        // Clone response to log text without consuming it
+        const clone = upstream.clone();
+        const text = await clone.text();
+        console.log(`OpenAI Response Body: ${text}`);
+
         let payload = {};
         try {
-            payload = await upstream.json();
+            payload = JSON.parse(text);
         } catch {
             payload = {};
         }
 
         if (!upstream.ok) {
             const message = payload.error?.message || payload.error || "Failed to create session";
+            console.error(`OpenAI Error: ${message}`);
             return jsonResponse({ error: message }, upstream.status, cookieValue);
         }
 
