@@ -1,4 +1,4 @@
-// Cloudflare Pages Advanced Worker for ChatKit Session API
+// Cloudflare Worker for ChatKit Session API (Workers with Assets)
 const CHATKIT_API_BASE = "https://api.openai.com";
 const SESSION_COOKIE_NAME = "chatkit_session_id";
 const SESSION_COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
