@@ -46,8 +46,24 @@ export function N8NAgentPanel() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<{ name: string; type: string; content: string } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const chatInstanceRef = useRef<N8NChatInstance>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setSelectedFile({
+        name: file.name,
+        type: file.type,
+        content: reader.result as string,
+      });
+    };
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     return () => {
