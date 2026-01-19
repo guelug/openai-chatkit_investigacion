@@ -15,7 +15,15 @@ export function ChatKitPanel({ apiKey, workflowId, chatkitConfiguration }: ChatK
   );
 
   const chatkit = useChatKit({
-    api: { getClientSecret },
+    api: {
+      getClientSecret,
+      uploadStrategy: chatkitConfiguration?.file_upload?.enabled ? { type: 'two_phase' } : undefined
+    },
+    composer: {
+      attachments: {
+        enabled: !!chatkitConfiguration?.file_upload?.enabled,
+      }
+    }
   });
 
   return (
