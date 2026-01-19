@@ -8,7 +8,11 @@ import { type User } from "./types";
 const USER_STORAGE_KEY = "chat_investigacion_user";
 const API_KEY_STORAGE_KEY = "chat_investigacion_api_key";
 
-const RESTRICTED_USERS = ["liliana.valdes@funiber.org"];
+const RESTRICTED_USERS = [
+  "liliana.valdes@funiber.org",
+  "david.grau@funiber.org",
+  "guillermo.pascual@funiber.org"
+];
 
 export default function App() {
   const [selectedAgent, setSelectedAgent] = useState<AgentId>("general-chat");
