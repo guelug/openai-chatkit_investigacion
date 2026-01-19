@@ -17,10 +17,7 @@ export function ChatKitPanel({ apiKey, workflowId, chatkitConfiguration }: ChatK
   const fileUploadEnabled = !!chatkitConfiguration?.file_upload?.enabled;
 
   const chatkit = useChatKit({
-    api: {
-      getClientSecret,
-      ...(fileUploadEnabled && { uploadStrategy: { type: 'hosted' as const } })
-    },
+    api: { getClientSecret },
     ...(fileUploadEnabled && {
       composer: {
         attachments: {
