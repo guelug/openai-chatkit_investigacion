@@ -71,7 +71,18 @@ async function handleCreateSession(request, env) {
     console.log(`User ID: ${userId}`);
 
     try {
+        const chatkit_configuration = body.chatkit_configuration;
+
         console.log("Sending request to OpenAI ChatKit API...");
+        const sessionPayload = {
+            workflow: { id: workflowId },
+            user: userId,
+        };
+
+        if (chatkit_configuration) {
+            sessionPayload.chatkit_configuration = chatkit_configuration;
+        }
+
         const upstream = await fetch(`${CHATKIT_API_BASE}/v1/chatkit/sessions`, {
             method: "POST",
             headers: {
@@ -79,10 +90,7 @@ async function handleCreateSession(request, env) {
                 "OpenAI-Beta": "chatkit_beta=v1",
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-                workflow: { id: workflowId },
-                user: userId,
-            }),
+            body: JSON.stringify(sessionPayload),
         });
 
         console.log(`OpenAI Response Status: ${upstream.status}`);

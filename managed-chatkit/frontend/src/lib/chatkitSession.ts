@@ -16,7 +16,8 @@ export const workflowId = (() => {
 export function createClientSecretFetcher(
   workflow: string,
   endpoint = "/api/chatkit/session",
-  apiKey?: string
+  apiKey?: string,
+  chatkitConfiguration?: any
 ) {
   return async (currentSecret: string | null) => {
     // If the SDK passes a secret, it means it's expired or invalid. 
@@ -29,10 +30,15 @@ export function createClientSecretFetcher(
       headers["X-API-Key"] = apiKey;
     }
 
+    const body: any = { workflow: { id: workflow } };
+    if (chatkitConfiguration) {
+      body.chatkit_configuration = chatkitConfiguration;
+    }
+
     const response = await fetch(endpoint, {
       method: "POST",
       headers,
-      body: JSON.stringify({ workflow: { id: workflow } }),
+      body: JSON.stringify(body),
     });
 
     const payload = (await response.json().catch(() => ({}))) as {

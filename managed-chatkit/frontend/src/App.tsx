@@ -64,7 +64,13 @@ export default function App() {
     const definition = agents.find(a => a.id === selectedAgent);
     if (!definition?.workflowId) return <div>Error: Workflow ID missing</div>;
 
-    return <ChatKitPanel apiKey={apiKey} workflowId={definition.workflowId} />;
+    return (
+      <ChatKitPanel
+        apiKey={apiKey}
+        workflowId={definition.workflowId}
+        chatkitConfiguration={definition.chatkitConfiguration}
+      />
+    );
   }, [selectedAgent, apiKey]);
 
 
