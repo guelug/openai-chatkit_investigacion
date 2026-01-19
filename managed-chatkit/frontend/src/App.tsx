@@ -8,8 +8,10 @@ import { type User } from "./types";
 const USER_STORAGE_KEY = "chat_investigacion_user";
 const API_KEY_STORAGE_KEY = "chat_investigacion_api_key";
 
+const RESTRICTED_USERS = ["liliana.valdes@funiber.org"];
+
 export default function App() {
-  const [selectedAgent, setSelectedAgent] = useState<AgentId>("chatgpt-basic");
+  const [selectedAgent, setSelectedAgent] = useState<AgentId>("general-chat");
   const [user, setUser] = useState<User | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [apiKey, setApiKey] = useState<string>("");
@@ -141,21 +143,28 @@ export default function App() {
           <p className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
             Agentes
           </p>
-          {agents.map((agent) => (
-            <button
-              key={agent.id}
-              onClick={() => setSelectedAgent(agent.id)}
-              className={`w-full text-left px-3 py-2 rounded-lg mb-1 transition ${selectedAgent === agent.id
-                ? "bg-gray-200 text-gray-900"
-                : "text-gray-700 hover:bg-gray-100"
-                }`}
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-base">{agent.icon}</span>
-                <span className="text-sm font-medium truncate">{agent.name}</span>
-              </div>
-            </button>
-          ))}
+          {agents
+            .filter(agent => {
+              if (user && RESTRICTED_USERS.includes(user.email)) {
+                return agent.id === "general-chat";
+              }
+              return true;
+            })
+            .map((agent) => (
+              <button
+                key={agent.id}
+                onClick={() => setSelectedAgent(agent.id)}
+                className={`w-full text-left px-3 py-2 rounded-lg mb-1 transition ${selectedAgent === agent.id
+                  ? "bg-gray-200 text-gray-900"
+                  : "text-gray-700 hover:bg-gray-100"
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-base">{agent.icon}</span>
+                  <span className="text-sm font-medium truncate">{agent.name}</span>
+                </div>
+              </button>
+            ))}
         </div>
 
         <div className="p-3 border-t border-gray-200">
