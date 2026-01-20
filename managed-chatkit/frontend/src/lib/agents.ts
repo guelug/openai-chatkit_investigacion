@@ -1,4 +1,4 @@
-export type AgentId = "general-chat" | "chatgpt-basic" | "chatgpt-pro" | "doctor" | "custom";
+export type AgentId = "general-chat" | "chatgpt-basic" | "chatgpt-pro" | "doctor" | "doctor-pro" | "custom";
 
 export interface AgentDefinition {
   id: AgentId;
@@ -63,6 +63,22 @@ export const agents: AgentDefinition[] = [
     description: "Agente Doctor para usuarios autorizados.",
     icon: "🥺",
     workflowId: "wf_696f4710d09c81908f959f3838a651330d26a74119f37a45",
+    chatkitConfiguration: {
+      file_upload: {
+        enabled: true
+      }
+    },
+    allowedUsers: [
+      "liliana.valdes@funiber.org",
+      "pedro.caparros@funiber.org"
+    ]
+  },
+  {
+    id: "doctor-pro",
+    name: "Doctor PRO",
+    description: "Agente Doctor PRO para usuarios autorizados.",
+    icon: "🧑‍⚕️",
+    workflowId: "wf_696f49a6dddc81909d628c0b585690b802ea5aee8bfeaa55",
     chatkitConfiguration: {
       file_upload: {
         enabled: true
