@@ -69,7 +69,7 @@ export const agents: AgentDefinition[] = [
       }
     },
     allowedUsers: [
-      "liliana.valdez@funiber.org",
+      "liliana.valdes@funiber.org",
       "pedro.caparros@funiber.org"
     ]
   },

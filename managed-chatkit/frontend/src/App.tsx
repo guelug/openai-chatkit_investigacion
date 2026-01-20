@@ -153,7 +153,7 @@ export default function App() {
               if (agent.allowedUsers && agent.allowedUsers.length > 0) {
                 return user && agent.allowedUsers.includes(user.email);
               }
-              // If user is in restricted list, only show general-chat
+              // If user is in restricted list, only show general-chat (but they may also see agents with allowedUsers above)
               if (user && RESTRICTED_USERS.includes(user.email)) {
                 return agent.id === "general-chat";
               }
