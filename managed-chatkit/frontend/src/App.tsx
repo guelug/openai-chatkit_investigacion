@@ -149,6 +149,11 @@ export default function App() {
           </p>
           {agents
             .filter(agent => {
+              // If agent has allowedUsers, only show to those users
+              if (agent.allowedUsers && agent.allowedUsers.length > 0) {
+                return user && agent.allowedUsers.includes(user.email);
+              }
+              // If user is in restricted list, only show general-chat
               if (user && RESTRICTED_USERS.includes(user.email)) {
                 return agent.id === "general-chat";
               }
